@@ -1,4 +1,4 @@
-# Implementation of exercises in "Quantum Transport: Atom To Transistor, S. Datta (2005)"
+# Implementation of exercises in the book "Quantum Transport: Atom To Transistor, S. Datta (2005)"
 
 This project aims to provide implementations of the exercises in the book "Quantum Transport: Atom to Transistor, S. Datta, (2005)", using the C++ library [TBTK](https://github.com/dafer45/TBTK/) for second quantized models.
 The project is meant to demonstrate the ease with which a wide range of quantum mechanical calculations can be performed using TBTK.
