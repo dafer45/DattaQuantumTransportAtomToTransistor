@@ -7,7 +7,6 @@ Aiding such students by providing an implementation that puts focus on high leve
 
 ## Prerequisits
 To compile the exercises, the [TBTK](https://github.com/dafer45/TBTK/) library must be installed.
-Follow the instructions on the project page for TBTK.
 
 ## Compile and run exercises
 Each exercise is implemented in a separate folder called E_X_X, where X_X is the exercise number.
