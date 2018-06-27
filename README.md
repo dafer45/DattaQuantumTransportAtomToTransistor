@@ -21,7 +21,7 @@ Results are written to the figures folder.
 
 ## Currently completed exercises
 The project is under active development and all available exercises are therefore not in a finished state.
-The following exercises are considered completed.
+The following exercises are considered to be completed.
 
 * Exercise 2.1
 
