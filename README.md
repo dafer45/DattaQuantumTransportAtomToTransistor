@@ -24,6 +24,7 @@ The project is under active development and all available exercises are therefor
 The following exercises are considered to be completed.
 
 * Exercise 2.1
+* Exercise 2.2
 
 ## Contact
 Please do not hesitate to get in contact if you have questions or would like to see quicker progress.
