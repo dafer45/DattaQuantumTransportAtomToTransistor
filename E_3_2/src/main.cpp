@@ -15,9 +15,9 @@
 
 /** @package TBTKQuantumTransportAtomToTransistor
  *  @file main.cpp
- *  @brief Exercise 3.1
+ *  @brief Exercise 3.2
  *
- *  Solution to exercise 3.1 in the book "Quantum Transport: Atom to
+ *  Solution to exercise 3.2 in the book "Quantum Transport: Atom to
  *  Transistor, S. Datta (2005)".
  *
  *  @author Kristofer Björnson
