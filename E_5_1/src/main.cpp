@@ -76,8 +76,8 @@ int main(int argc, char **argv){
 	PropertyExtractor::BlockDiagonalizer propertyExtractor(solver);
 	Array<double> eigenValues({2, k.getResolution()});
 	for(unsigned int n = 0; n < k.getResolution(); n++){
-		eigenValues[{0, n}] = propertyExtractor.getEigenValue({n}, 0);
-		eigenValues[{1, n}] = propertyExtractor.getEigenValue({n}, 1);
+		eigenValues[{0, n}] = propertyExtractor.getEigenValue({(int)n}, 0);
+		eigenValues[{1, n}] = propertyExtractor.getEigenValue({(int)n}, 1);
 	}
 
 	//Plot the eigenvalues.
