@@ -68,7 +68,6 @@ int main(int argc, char **argv){
 
 	//Setup the model.
 	Model model;
-//	Range k(-M_PI/a, M_PI/a, 100);
 	for(int n = 0; n < 200; n++){
 		Vector3d k;
 		if(n < 100)
