@@ -138,7 +138,7 @@ int main(int argc, char **argv){
 	double m_c = -1e-30;
 	double hbar = UnitHandler::getHbarN();
 	Array<double> h({200});
-	for(int n = 0; n < 200; n++){
+	for(unsigned int n = 0; n < 200; n++){
 		Vector3d k;
 		if(n < 100)
 			k = Vector3d({M_PI*(1 - n/100.), M_PI*(1 - n/100.), M_PI*(1 - n/100.)});
