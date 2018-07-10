@@ -15,19 +15,16 @@
 
 /** @package TBTKQuantumTransportAtomToTransistor
  *  @file main.cpp
- *  @brief Exercise 5.1
+ *  @brief Exercise 6.2
  *
- *  Solution to exercise 5.1 in the book "Quantum Transport: Atom to
+ *  Solution to exercise 6.2 in the book "Quantum Transport: Atom to
  *  Transistor, S. Datta (2005)".
  *
  *  @author Kristofer Björnson
  */
 
-#include "TBTK/Model.h"
 #include "TBTK/Plotter.h"
-#include "TBTK/PropertyExtractor/BlockDiagonalizer.h"
 #include "TBTK/Range.h"
-#include "TBTK/Solver/BlockDiagonalizer.h"
 #include "TBTK/Streams.h"
 #include "TBTK/UnitHandler.h"
 
