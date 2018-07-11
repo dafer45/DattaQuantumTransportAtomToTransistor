@@ -257,7 +257,6 @@ int main(int argc, char **argv){
 
 		//Replace U with a mix of the old and new U.
 		U = 0.1*newU + 0.9*U;
-
 	}
 
 	//Plot the density.
