@@ -276,5 +276,23 @@ int main(int argc, char **argv){
 	plotter.plot(densityPerUnitArea);
 	plotter.save("figures/DensityPerUnitArea.png");
 
+	//Calculate the effective capacitance.
+	double dDensity = densityPerUnitArea[{99}] - densityPerUnitArea[{98}];
+	double dVoltage = UnitHandler::convertVoltageDtN(
+		gateVoltage[{99}] - gateVoltage[{98}],
+		UnitHandler::VoltageUnit::V
+	);
+	double capacitance = e*dDensity/dVoltage;
+
+	//Print the capacitance.
+	Streams::out << "Capacitance:\t" << capacitance << " C^2/Å^2eV" << "\n";
+
+	//Calculate the effective plate separation.
+	double d = 2*epsilon/capacitance;
+
+	//Print the effective plate separation.
+	Streams::out << "Effective plate separation:\t" << d << " "
+		<< UnitHandler::getLengthUnitString() << "\n";
+
 	return 0;
 }
