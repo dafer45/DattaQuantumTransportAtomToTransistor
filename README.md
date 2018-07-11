@@ -35,6 +35,7 @@ The following exercises are considered to be completed.
 * Exercise 7.1.b
 * Exercise 7.1.c
 * Exercise 7.2.a
+* Exercise 7.2.b
 
 ## Contact
 Please do not hesitate to get in contact if you have questions or would like to see quicker progress.
