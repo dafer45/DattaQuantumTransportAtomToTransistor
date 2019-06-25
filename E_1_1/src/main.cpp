@@ -22,19 +22,39 @@
  *  @author Kristofer Björnson
  */
 
+#include "SelfConsistentField.h"
 #include "TBTK/Streams.h"
+#include "TBTK/UnitHandler.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
 
-double LOWER_BOUND = -10;
-double UPPER_BOUND = 10;
-
 int main(int argc, char **argv){
-//	Property::DOS dos(LOWER_BOUND, UPPER_BOUND, RESOLUTION);
-//	double N = calculateN(dos);
+	//Set the natural units. Argument order: (charge, count, energy,
+	//length, temperature, time).
+	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 m", "1 K", "1 s"});
+
+	//Get the fundamental charge in natural units.
+	double q = UnitHandler::getEN();
+
+	//Convert voltage from V to natural units.
+	double V_D = UnitHandler::convertVoltageDtN(
+		0.2,
+		UnitHandler::VoltageUnit::V
+	);
+
+	//Calculate the temperature T = 0.025/k_B.
+	double temperature = 0.025/UnitHandler::getK_BN();
+
+	QTAT::Solver::SelfConsistentField solver;
+
+	solver.setMu1(0);
+	solver.setMu2(0 - q*V_D);
+	solver.setTemperature(temperature);
+	solver.setGamma1(0.05);
+	solver.run();
 
 	return 0;
 }

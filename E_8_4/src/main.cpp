@@ -110,6 +110,7 @@ int main(int argc, char **argv){
 	////////////////////
 	// Exercise 8.4.b //
 	////////////////////
+
 	for(unsigned int n = 0; n < 2; n++){
 		//Setup the model.
 		Model modelB;
