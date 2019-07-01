@@ -96,7 +96,6 @@ int main(int argc, char **argv){
 	double hbar = UnitHandler::getHbarN();
 	double t = hbar*hbar/(2*m_c*a*a);		//eV
 	int sizeX = 50;
-	Array<double> U1({(unsigned int)sizeX}, 0);
 	Array<double> UB({(unsigned int)sizeX}, 0);
 	callbackU.setU(U);
 
@@ -163,7 +162,7 @@ int main(int argc, char **argv){
 		for(unsigned int n = 0; n < RESOLUTION; n++){
 			complex<double> ka = acos(
 				complex<double>(
-					1 - (energies[n] - U1[{0}] - UB[{0}])/(2*t),
+					1 - (energies[n] - UB[{0}])/(2*t),
 					0
 				)
 			);
@@ -173,7 +172,6 @@ int main(int argc, char **argv){
 				complex<double>(
 					1 - (
 						energies[n]
-						- U1[{(unsigned int)(sizeX-1)}]
 						- UB[{(unsigned int)(sizeX-1)}]
 					)/(2*t),
 					0
@@ -209,6 +207,8 @@ int main(int argc, char **argv){
 			transmissionRateData.push_back(transmissionRate(c));
 		}
 		Plotter2 plotter;
+		plotter.setLabelX("E (eV)");
+		plotter.setLabelY("Transmission rate");
 		plotter.plot(energy, transmissionRateData);
 		plotter.save("figures/TransmissionRate_" + to_string(m) + ".png");
 	}

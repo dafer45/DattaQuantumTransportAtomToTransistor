@@ -193,6 +193,8 @@ int main(int argc, char **argv){
 		transmissionRateData.push_back(transmissionRate(c));
 	}
 	Plotter2 plotter;
+	plotter.setLabelX("Energy (eV)");
+	plotter.setLabelY("Transmission rate");
 	plotter.plot(energy, transmissionRateData);
 	plotter.save("figures/TransmissionRate.png");
 
