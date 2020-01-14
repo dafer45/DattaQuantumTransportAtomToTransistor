@@ -24,34 +24,40 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
 #include "TBTK/Property/Density.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Solver/LinearEquationSolver.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
-	double epsilon_0 = UnitHandler::getEpsilon_0N();
-	double k_B = UnitHandler::getK_BN();
-	double e = UnitHandler::getEN();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
+	double epsilon_0 = UnitHandler::getConstantInNaturalUnits("epsilon_0");
+	double k_B = UnitHandler::getConstantInNaturalUnits("k_B");
+	double e = UnitHandler::getConstantInNaturalUnits("e");
 	double a = 3;	//Ångström
 	double mu = 0;	//eV
 	double temperature = 300;	//Kelvin
@@ -72,9 +78,9 @@ int main(int argc, char **argv){
 	double m_c = 0.25*m_e;
 
 	//Gate voltage.
-	double V_g = UnitHandler::convertVoltageDtN(
+	double V_g = UnitHandler::convertArbitraryToNatural<Quantity::Voltage>(
 		0.25,
-		UnitHandler::VoltageUnit::V
+		Quantity::Voltage::Unit::V
 	);
 
 	//Constant in Eq. 7.2.8.
@@ -277,6 +283,7 @@ int main(int argc, char **argv){
 	}
 
 	//Plot the conduction band profile.
+	plotter.clear();
 	plotter.setBoundsY(-0.5, 3);
 	plotter.setLabelX("z");
 	plotter.setLabelY("Energy (eV)");

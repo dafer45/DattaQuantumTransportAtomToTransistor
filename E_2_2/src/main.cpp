@@ -24,31 +24,36 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
+#include "TBTK/Property/WaveFunctions.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Streams.h"
 #include "TBTK/UnitHandler.h"
-#include "TBTK/Property/WaveFunctions.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 int main(int argc, char **argv){
+	//Initialize TBTK.
+	Initialize();
+
 	//Set the natural units. Argument order: (charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
 	double a = 0.05;
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
-	double e = UnitHandler::getEN();
-	double epsilon_0 = UnitHandler::getEpsilon_0N();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
+	double e = UnitHandler::getConstantInNaturalUnits("e");
+	double epsilon_0 = UnitHandler::getConstantInNaturalUnits("epsilon_0");
 	double A = hbar*hbar/(2*m_e*a*a);
 	double B = e*e/(4*M_PI*epsilon_0);
 	double C = hbar*hbar/(2*m_e);
@@ -115,19 +120,17 @@ int main(int argc, char **argv){
 	plotter.setLabelY("Probability density");
 
 	plotter.plot(probabilityDistribution.getSlice({0, IDX_ALL}));
-	plotter.setHold(true);
 	plotter.plot(
 		probabilityDistribution.getSlice({2, IDX_ALL}),
-		Decoration({0, 0, 0}, Decoration::LineStyle::Point)
+		{{"linestyle", " "}, {"marker", "o"}, {"markersize", "5"}}
 	);
 	plotter.save("figures/ProbabilityDistribution1s.png");
 
-	plotter.setHold(false);
+	plotter.clear();
 	plotter.plot(probabilityDistribution.getSlice({1, IDX_ALL}));
-	plotter.setHold(true);
 	plotter.plot(
 		probabilityDistribution.getSlice({3, IDX_ALL}),
-		Decoration({0, 0, 0}, Decoration::LineStyle::Point)
+		{{"linestyle", " "}, {"marker", "o"}, {"markersize", "5"}}
 	);
 	plotter.save("figures/ProbabilityDistribution2s.png");
 

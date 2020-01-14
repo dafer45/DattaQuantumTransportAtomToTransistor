@@ -24,28 +24,34 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
+#include "TBTK/Property/WaveFunctions.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
-#include "TBTK/Property/WaveFunctions.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
 	double a = 1;
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
 	double t_0 = pow(hbar/a, 2)/(2*m_e);
 	const int SIZE_X = 100;
 
@@ -89,8 +95,7 @@ int main(int argc, char **argv){
 		Plotter plotter;
 		plotter.setLabelX("Eigenvalue number");
 		plotter.setLabelY("Energy");
-		plotter.setHold(true);
-		plotter.plot(eigenValues);
+		plotter.plot(eigenValues.getData());
 		plotter.plot(analyticalEigenValues);
 		plotter.save("figures/EigenValues.png");
 
@@ -113,11 +118,10 @@ int main(int argc, char **argv){
 		}
 
 		//Plot the probability distributions.
-		plotter.setHold(false);
+		plotter.clear();
 		plotter.setLabelX("Lattice site number");
 		plotter.setLabelY("Probability density");
 		plotter.plot(probabilityDistribution.getSlice({0, IDX_ALL}));
-		plotter.setHold(true);
 		plotter.plot(probabilityDistribution.getSlice({1, IDX_ALL}));
 		plotter.save("figures/ProbabilityDistribution.png");
 

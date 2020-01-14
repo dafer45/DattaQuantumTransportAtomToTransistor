@@ -24,29 +24,35 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
 	double a = 3;	//Ångström
 	int width_AlGaAs = 100;
 	int width_GaAs = 69/a;
@@ -153,7 +159,6 @@ int main(int argc, char **argv){
 	plotter.setBoundsY(0, 0.4);
 	plotter.setLabelX("Width");
 	plotter.setLabelY("Energy (eV)");
-	plotter.setHold(true);
 	plotter.plot(lowestEigenValues.getSlice({0, IDX_ALL}));
 	plotter.plot(lowestEigenValues.getSlice({1, IDX_ALL}));
 	plotter.save("figures/EigenValues.png");

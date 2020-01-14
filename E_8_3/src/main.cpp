@@ -24,7 +24,6 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
 #include "TBTK/Property/Density.h"
 #include "TBTK/Property/SelfEnergy.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
@@ -34,24 +33,31 @@
 #include "TBTK/Solver/Greens.h"
 #include "TBTK/Solver/LinearEquationSolver.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
 	double m = 0.25*m_e;
 	double a = 2;	//Ångström.
 	double t = hbar*hbar/(2*m*a*a);
@@ -92,7 +98,6 @@ int main(int argc, char **argv){
 	Plotter plotter;
 	plotter.setLabelX("x");
 	plotter.setLabelY("Density (Ao^-1)");
-	plotter.setHold(true);
 	plotter.plot(d);
 
 	////////////////////
@@ -201,10 +206,7 @@ int main(int argc, char **argv){
 		d[{n}] = densityB(n)/a;
 
 	//Plot the density.
-	plotter.plot(
-		d,
-		Decoration({0, 0, 0}, Decoration::LineStyle::Point)
-	);
+	plotter.plot(d, {{"color", "black"}, {"linestyle", ":"}});
 
 	//Save the plot.
 	plotter.save("figures/Density.png");
@@ -222,11 +224,12 @@ int main(int argc, char **argv){
 	}
 
 	//Plot the LDOS.
-	plotter.setHold(false);
+	plotter.clear();
 	plotter.setLabelX("Energy");
 	plotter.setLabelY("LDOS");
 	plotter.plot(l.getSlice({0, IDX_ALL}));
 	plotter.save("figures/LDOSLeft.png");
+	plotter.clear();
 	plotter.plot(l.getSlice({1, IDX_ALL}));
 	plotter.save("figures/LDOSRight.png");
 

@@ -24,25 +24,31 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
 #include "TBTK/PropertyExtractor/BlockDiagonalizer.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/BlockDiagonalizer.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
 	double a = 1;
@@ -136,7 +142,7 @@ int main(int argc, char **argv){
 	//Calculate the approximation.
 	double E_c = 0;
 	double m_c = -1e-30;
-	double hbar = UnitHandler::getHbarN();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
 	Array<double> h({200});
 	for(unsigned int n = 0; n < 200; n++){
 		Vector3d k;
@@ -152,15 +158,15 @@ int main(int argc, char **argv){
 	Plotter plotter;
 	plotter.setLabelX("k");
 	plotter.setLabelY("Energy (eV)");
-	plotter.setHold(true);
-	for(int n = 0; n < 10; n++)
-		plotter.plot(eigenValues.getSlice({n, IDX_ALL}));
+	for(int n = 0; n < 10; n++){
+		plotter.plot(
+			eigenValues.getSlice({n, IDX_ALL}),
+			{{"color", "black"}, {"linestyle", "-"}}
+		);
+	}
 
 	//Plot the approximation.
-	plotter.plot(
-		h,
-		Decoration({224, 32, 32}, Decoration::LineStyle::Line, 2)
-	);
+	plotter.plot(h, {{"color", "#E04040"}, {"linestyle", "--"}});
 	plotter.save("figures/Spectrum.png");
 
 	return 0;

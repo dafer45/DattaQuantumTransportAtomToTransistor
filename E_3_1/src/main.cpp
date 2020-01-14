@@ -24,86 +24,110 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
+#include "TBTK/Property/WaveFunctions.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
-#include "TBTK/Property/WaveFunctions.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 const int SIZE_R = 100;
 const double dr = 0.05;
 Range r(dr, dr*SIZE_R, SIZE_R);
 Array<double> U_SCF;
 
-//Callback function that returns U_SCF.
-complex<double> callbackU_SCF(const Index &to, const Index &from){
-	return U_SCF[{(unsigned int)from[0]}];
-}
-
-//Callback function for calculating U_SCF.
-bool selfConsistencyCallback(Solver::Diagonalizer &solver){
-	PropertyExtractor::Diagonalizer propertyExtractor(solver);
-
-	//Calculate the density. (Only the first state contributes for He,
-	//multiplied by a factor 2 for spin.)
-	Array<double> density({SIZE_R}, 0);
-	for(unsigned int state = 0; state < 1; state++){
-		for(int r = 0; r < SIZE_R; r++){
-			complex<double> amplitude
-				= propertyExtractor.getAmplitude(state, {r});
-			density[{(unsigned int)r}] += 2*pow(abs(amplitude), 2)/dr;
-		}
+//Callback that returns U_SCF.
+class CallbackU_SCF : public HoppingAmplitude::AmplitudeCallback{
+	complex<double> getHoppingAmplitude(
+		const Index &to,
+		const Index &from
+	) const{
+		return U_SCF[{(unsigned int)from[0]}];
 	}
+} callbackU_SCF;
 
-	//Parameters
-	double e = UnitHandler::getEN();
-	double epsilon_0 = UnitHandler::getEpsilon_0N();
+//Callback for calculating U_SCF.
+class SelfConsistencyCallback :
+	public Solver::Diagonalizer::SelfConsistencyCallback
+{
+	bool selfConsistencyCallback(Solver::Diagonalizer &solver){
+		PropertyExtractor::Diagonalizer propertyExtractor(solver);
 
-	//Calculate the new U_SCF
-	Array<double> newU_SCF({SIZE_R}, 0);
-	for(unsigned int n = 0; n < SIZE_R; n++){
-		for(unsigned int np = 0; np < n; np++){
-			newU_SCF[{n}] += (1/2.)*e*e/(4*M_PI*epsilon_0*r[n])*dr*density[{np}];
+		//Calculate the density. (Only the first state contributes for
+		//He, multiplied by a factor 2 for spin.)
+		Array<double> density({SIZE_R}, 0);
+		for(unsigned int state = 0; state < 1; state++){
+			for(int r = 0; r < SIZE_R; r++){
+				complex<double> amplitude
+					= propertyExtractor.getAmplitude(
+						state,
+						{r}
+					);
+				density[{(unsigned int)r}]
+					+= 2*pow(abs(amplitude), 2)/dr;
+			}
 		}
-		for(unsigned int np = n; np < SIZE_R; np++){
-			newU_SCF[{n}] += (1/2.)*e*e/(4*M_PI*epsilon_0)*dr*density[{np}]/r[np];
+
+		//Parameters
+		double e = UnitHandler::getConstantInNaturalUnits("e");
+		double epsilon_0
+			= UnitHandler::getConstantInNaturalUnits("epsilon_0");
+
+		//Calculate the new U_SCF
+		Array<double> newU_SCF({SIZE_R}, 0);
+		for(unsigned int n = 0; n < SIZE_R; n++){
+			for(unsigned int np = 0; np < n; np++){
+				newU_SCF[{n}] += (1/2.)*e*e/(
+					4*M_PI*epsilon_0*r[n]
+				)*dr*density[{np}];
+			}
+			for(unsigned int np = n; np < SIZE_R; np++){
+				newU_SCF[{n}] += (1/2.)*e*e/(
+					4*M_PI*epsilon_0
+				)*dr*density[{np}]/r[np];
+			}
 		}
+
+		//Calculate the difference between the new and old solution.
+		double difference = 0;
+		for(unsigned int n = 0; n < SIZE_R; n++)
+			difference += abs(newU_SCF[{n}] - U_SCF[{n}]);
+
+		//Update U_SCF.
+		U_SCF = newU_SCF;
+
+		//Return true to indicate convergence if the difference between
+		//the new and old solution is smaller than 10 meV.
+		if(difference < 10e-3)
+			return true;
+		else
+			return false;
 	}
-
-	//Calculate the difference between the new and old solution.
-	double difference = 0;
-	for(unsigned int n = 0; n < SIZE_R; n++)
-		difference += abs(newU_SCF[{n}] - U_SCF[{n}]);
-
-	//Update U_SCF.
-	U_SCF = newU_SCF;
-
-	//Return true to indicate convergence if the difference between the new
-	//and old solution is smaller than 10 meV.
-	if(difference < 10e-3)
-		return true;
-	else
-		return false;
-}
+} selfConsistencyCallback;
 
 int main(int argc, char **argv){
+	//Initialize TBTK.
+	Initialize();
+
 	//Set the natural units. Argument order: (charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
-	double e = UnitHandler::getEN();
-	double epsilon_0 = UnitHandler::getEpsilon_0N();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
+	double e = UnitHandler::getConstantInNaturalUnits("e");
+	double epsilon_0 = UnitHandler::getConstantInNaturalUnits("epsilon_0");
 	double A = hbar*hbar/(2*m_e*dr*dr);
 	double B = 2*e*e/(4*M_PI*epsilon_0);
 	double C = hbar*hbar/(2*m_e);
@@ -154,12 +178,8 @@ int main(int argc, char **argv){
 	plotter.setBoundsY(-100, 20);
 	plotter.setLabelX("r");
 	plotter.setLabelY("U (eV)");
-	plotter.setHold(true);
 	plotter.plot(U_N);
-	plotter.plot(
-		U_SCF,
-		Decoration({0, 0, 0}, Decoration::LineStyle::Line, 2)
-	);
+	plotter.plot(U_SCF);
 	plotter.save("figures/Potentials.png");
 
 	//Extract the wave functions for the 1s state. Note that zero based
@@ -179,12 +199,9 @@ int main(int argc, char **argv){
 
 	//Plot the probability distributions.
 	plotter.clear();
-	plotter.setAutoScaleY(true);
 	plotter.setLabelX("r");
 	plotter.setLabelY("Probability density");
-
 	plotter.plot(probabilityDistribution);
-	plotter.setHold(true);
 	plotter.save("figures/ProbabilityDistribution1s.png");
 
 	return 0;

@@ -24,26 +24,32 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/PropertyExtractor/Greens.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Solver/Greens.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Paramters.
 	const double LOWER_BOUND = -1;	//eV
@@ -104,6 +110,7 @@ int main(int argc, char **argv){
 	Plotter plotter;
 	plotter.plot(l.getSlice({0, IDX_ALL}));
 	plotter.save("figures/LDOS_A0.png");
+	plotter.clear();
 	plotter.plot(l.getSlice({1, IDX_ALL}));
 	plotter.save("figures/LDOS_A1.png");
 
@@ -192,8 +199,10 @@ int main(int argc, char **argv){
 	}
 
 	//Plot the LDOS.
+	plotter.clear();
 	plotter.plot(l.getSlice({0, IDX_ALL}));
 	plotter.save("figures/LDOS_B0.png");
+	plotter.clear();
 	plotter.plot(l.getSlice({1, IDX_ALL}));
 	plotter.save("figures/LDOS_B1.png");
 

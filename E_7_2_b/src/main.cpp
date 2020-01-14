@@ -24,34 +24,40 @@
  */
 
 #include "TBTK/Model.h"
-#include "TBTK/Plotter.h"
 #include "TBTK/Property/Density.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Solver/LinearEquationSolver.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameters.
-	double hbar = UnitHandler::getHbarN();
-	double m_e = UnitHandler::getM_eN();
-	double epsilon_0 = UnitHandler::getEpsilon_0N();
-	double k_B = UnitHandler::getK_BN();
-	double e = UnitHandler::getEN();
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double m_e = UnitHandler::getConstantInNaturalUnits("m_e");
+	double epsilon_0 = UnitHandler::getConstantInNaturalUnits("epsilon_0");
+	double k_B = UnitHandler::getConstantInNaturalUnits("k_B");
+	double e = UnitHandler::getConstantInNaturalUnits("e");
 	double a = 3;	//Ångström
 	double mu = 0;	//eV
 	double temperature = 300;	//Kelvin
@@ -79,9 +85,11 @@ int main(int argc, char **argv){
 	Range gateVoltage(-0.3, 0.3, 100);
 	for(unsigned int c = 0; c < 100; c++){
 		//Gate voltage.
-		double V_g = UnitHandler::convertVoltageDtN(
+		double V_g = UnitHandler::convertArbitraryToNatural<
+			Quantity::Voltage
+		>(
 			gateVoltage[c],
-			UnitHandler::VoltageUnit::V
+			Quantity::Voltage::Unit::V
 		);
 
 		//Setup the electric potential.
@@ -278,10 +286,11 @@ int main(int argc, char **argv){
 
 	//Calculate the effective capacitance.
 	double dDensity = densityPerUnitArea[{99}] - densityPerUnitArea[{98}];
-	double dVoltage = UnitHandler::convertVoltageDtN(
-		gateVoltage[{99}] - gateVoltage[{98}],
-		UnitHandler::VoltageUnit::V
-	);
+	double dVoltage
+		= UnitHandler::convertArbitraryToNatural<Quantity::Voltage>(
+			gateVoltage[{99}] - gateVoltage[{98}],
+			Quantity::Voltage::Unit::V
+		);
 	double capacitance = e*dDensity/dVoltage;
 
 	//Print the capacitance.
@@ -292,7 +301,7 @@ int main(int argc, char **argv){
 
 	//Print the effective plate separation.
 	Streams::out << "Effective plate separation:\t" << d << " "
-		<< UnitHandler::getLengthUnitString() << "\n";
+		<< UnitHandler::getUnitString<Quantity::Length>() << "\n";
 
 	return 0;
 }

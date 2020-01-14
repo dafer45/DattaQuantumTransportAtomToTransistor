@@ -26,20 +26,21 @@
 #include "TBTK/Array.h"
 #include "TBTK/Functions.h"
 #include "TBTK/Model.h"
-#include "TBTK/Plotter2.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/PropertyExtractor/Greens.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Solver/Greens.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-//using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
@@ -83,19 +84,25 @@ private:
 } callbackU;
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Paramters.
 	double U = 0.4;						//eV
 	double a = 3;						//Angstrom
-	double m_c = 0.25*UnitHandler::getM_eN();
-	double hbar = UnitHandler::getHbarN();
-	double q = UnitHandler::getEN();
+	double m_c = 0.25*UnitHandler::getConstantInNaturalUnits("m_e");
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
+	double q = UnitHandler::getConstantInNaturalUnits("e");
 	double t = hbar*hbar/(2*m_c*a*a);			//eV
 	double E_f = 0.1;					//eV
-	double temperature = 0.025/UnitHandler::getK_BN();	//K
+	double temperature
+		= 0.025/UnitHandler::getConstantInNaturalUnits("k_B");	//K
 	const double LOWER_BOUND = -0.2;			//eV
 	const double UPPER_BOUND = 0.8;				//eV
 	const int RESOLUTION = 101;
@@ -316,7 +323,7 @@ int main(int argc, char **argv){
 			currents.push_back(current);
 
 			//Plot the results.
-			Plotter2 plotter;
+			Plotter plotter;
 			plotter.setLabelX("Voltage (V)");
 			plotter.setLabelY("Current (A)");
 			plotter.plot(voltages, currents);

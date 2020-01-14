@@ -6,7 +6,7 @@ It also aims to be an entry point for students interested in quantum transport.
 Aiding such students by providing an implementation that puts focus on high level concepts rather than irrelevant numerical nuisance.
 
 ## Prerequisits
-To compile the exercises, the [TBTK](https://github.com/dafer45/TBTK/) library must be installed.
+To compile the exercises, [TBTK](https://github.com/dafer45/TBTK/) v2.0.0 or higher must be installed.
 
 ## Compile and run exercises
 Each exercise is implemented in a separate folder called E_X_X, where X_X is the exercise number.

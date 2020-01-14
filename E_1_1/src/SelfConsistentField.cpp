@@ -20,38 +20,47 @@
 
 #include "SelfConsistentField.h"
 #include "TBTK/Functions.h"
-#include "TBTK/Plotter.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 namespace TBTK{
+
+using namespace Visualization::MatPlotLib;
+
 namespace QTAT{
 namespace Solver{
 
 SelfConsistentField::SelfConsistentField(){
 	gamma1 = 0.005;
 	gamma2 = 0.005;
-	temperature = 0.025/UnitHandler::getK_BN();
+	temperature = 0.025/UnitHandler::getConstantInNaturalUnits("k_B");
 	mu1 = 0;
 	mu2 = 2;
 }
 
 void SelfConsistentField::run(){
 	auto f = Functions::fermiDiracDistribution;
-	auto q = UnitHandler::getEN();
+	auto q = UnitHandler::getConstantInNaturalUnits("e");
 
 	Array<double> N({100});
 	Array<double> I({100});
 	Array<double> U0({100});
 	for(unsigned int n = 0; n < 100; n++){
-		const double V_G = UnitHandler::convertVoltageDtN(
+		const double V_G = UnitHandler::convertArbitraryToNatural<
+			Quantity::Voltage
+		>(
 			0,
-			UnitHandler::VoltageUnit::V
+			Quantity::Voltage::Unit::V
 		);
-		const double V_D = UnitHandler::convertVoltageDtN(
+		const double V_D = UnitHandler::convertArbitraryToNatural<
+			Quantity::Voltage
+		>(
 			(int)n/100.,
-			UnitHandler::VoltageUnit::V
+			Quantity::Voltage::Unit::V
 		);
 
-		Streams::out << V_D << " " << UnitHandler::getVoltageUnitString() << "\n";
+		Streams::out << V_D << " "
+			<< UnitHandler::getUnitString<Quantity::Voltage>()
+			<< "\n";
 
 		Property::DOS dos = calculateDOS();
 		double U_L = -q*V_D/2.;
@@ -66,7 +75,7 @@ void SelfConsistentField::run(){
 		)/dos.getResolution();
 
 		double N_0 = 0;
-		for(int n = 0; n < dos.getResolution(); n++){
+		for(unsigned int n = 0; n < dos.getResolution(); n++){
 			double E = dos.getLowerBound() + n*dE;
 
 			N_0 += dos(n)*f(E, 0, temperature)*dE;
@@ -78,7 +87,7 @@ void SelfConsistentField::run(){
 		while(dU > 1e-6){
 			numParticles = 0;
 			current = 0;
-			for(int n = 0; n < dos.getResolution(); n++){
+			for(unsigned int n = 0; n < dos.getResolution(); n++){
 				double E = dos.getLowerBound() + n*dE;
 
 				numParticles += dos(n)*(
@@ -91,7 +100,9 @@ void SelfConsistentField::run(){
 					- f(E + U, mu2, temperature)
 				)*dE;
 			}
-			current *= UnitHandler::getEN()/UnitHandler::getHbarN();
+			current *= UnitHandler::getConstantInNaturalUnits(
+				"e"
+			)/UnitHandler::getConstantInNaturalUnits("hbar");
 
 			double dN = numParticles - N_0;
 			double newU = U_L + U_0*dN;
@@ -100,7 +111,7 @@ void SelfConsistentField::run(){
 			Streams::out << dU << "\n";
 		}
 
-		Plot::Plotter plotter;
+		Plotter plotter;
 		plotter.plot(dos);
 		plotter.save("figures/DOS.png");
 
@@ -112,11 +123,13 @@ void SelfConsistentField::run(){
 		U0[{n}] = U;
 	}
 
-	Plot::Plotter plotter;
+	Plotter plotter;
 	plotter.plot(N);
 	plotter.save("figures/NumParticles.png");
+	plotter.clear();
 	plotter.plot(I);
 	plotter.save("figures/Current.png");
+	plotter.clear();
 	plotter.plot(U0);
 	plotter.save("figures/U.png");
 }

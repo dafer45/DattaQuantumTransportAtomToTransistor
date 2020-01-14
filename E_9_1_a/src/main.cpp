@@ -25,20 +25,21 @@
 
 #include "TBTK/Array.h"
 #include "TBTK/Model.h"
-#include "TBTK/Plotter2.h"
 #include "TBTK/PropertyExtractor/Diagonalizer.h"
 #include "TBTK/PropertyExtractor/Greens.h"
 #include "TBTK/Range.h"
 #include "TBTK/Solver/Diagonalizer.h"
 #include "TBTK/Solver/Greens.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-//using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
@@ -82,9 +83,14 @@ private:
 } callbackU;
 
 int main(int argc, char **argv){
-	//Set the natural units. Argument order: (charge, count, energy,
+	//Initialize TBTK.
+	Initialize();
+
+	//Set the natural units. Argument order: (angle, charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Paramters.
 	const double LOWER_BOUND = -0.2;		//eV
@@ -92,8 +98,8 @@ int main(int argc, char **argv){
 	const int RESOLUTION = 1000;
 	double U = 0.4;					//eV
 	double a = 3;					//Angstrom
-	double m_c = 0.25*UnitHandler::getM_eN();
-	double hbar = UnitHandler::getHbarN();
+	double m_c = 0.25*UnitHandler::getConstantInNaturalUnits("m_e");
+	double hbar = UnitHandler::getConstantInNaturalUnits("hbar");
 	double t = hbar*hbar/(2*m_c*a*a);		//eV
 	int sizeX = 50;
 	Array<double> UB({(unsigned int)sizeX}, 0);
@@ -206,7 +212,7 @@ int main(int argc, char **argv){
 			energy.push_back(energies[c]);
 			transmissionRateData.push_back(transmissionRate(c));
 		}
-		Plotter2 plotter;
+		Plotter plotter;
 		plotter.setLabelX("E (eV)");
 		plotter.setLabelY("Transmission rate");
 		plotter.plot(energy, transmissionRateData);

@@ -23,23 +23,29 @@
  *  @author Kristofer Björnson
  */
 
-#include "TBTK/Plotter.h"
 #include "TBTK/Range.h"
 #include "TBTK/Streams.h"
+#include "TBTK/TBTK.h"
 #include "TBTK/UnitHandler.h"
+#include "TBTK/Visualization/MatPlotLib/Plotter.h"
 
 #include <complex>
 
 using namespace std;
 using namespace TBTK;
-using namespace Plot;
+using namespace Visualization::MatPlotLib;
 
 complex<double> i(0, 1);
 
 int main(int argc, char **argv){
+	//Initialize TBTK.
+	Initialize();
+
 	//Set the natural units. Argument order: (charge, count, energy,
 	//length, temperature, time).
-	UnitHandler::setScales({"1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"});
+	UnitHandler::setScales(
+		{"1 rad", "1 C", "1 pcs", "1 eV", "1 Ao", "1 K", "1 s"}
+	);
 
 	//Parameter.
 	double t = 3;
@@ -71,11 +77,22 @@ int main(int argc, char **argv){
 		Plotter plotter;
 		plotter.setLabelX("k_x*a/pi");
 		plotter.setLabelY("Energy (eV)");
-		plotter.setHold(true);
-		plotter.plot(E.getSlice({0, 0, IDX_ALL}));
-		plotter.plot(E.getSlice({1, 0, IDX_ALL}));
-		plotter.plot(E.getSlice({0, 1, IDX_ALL}));
-		plotter.plot(E.getSlice({1, 1, IDX_ALL}));
+		plotter.plot(
+			E.getSlice({0, 0, IDX_ALL}),
+			{{"color", "black"}, {"linestyle", "-"}}
+		);
+		plotter.plot(
+			E.getSlice({1, 0, IDX_ALL}),
+			{{"color", "black"}, {"linestyle", "-"}}
+		);
+		plotter.plot(
+			E.getSlice({0, 1, IDX_ALL}),
+			{{"color", "black"}, {"linestyle", "-"}}
+		);
+		plotter.plot(
+			E.getSlice({1, 1, IDX_ALL}),
+			{{"color", "black"}, {"linestyle", "-"}}
+		);
 		plotter.save("figures/Spectrum_m_" + to_string(m) + ".png");
 	}
 
